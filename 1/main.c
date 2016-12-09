@@ -27,8 +27,8 @@ int main(){
                     n[i] = c2;
                 }
                 else{   // If character not number between is found
-                        // ends saving characters and ends string
-                        // and loop
+                    // ends saving characters and ends string
+                    // and loop
                     n[i] = '\0';
                     break;
                 }
@@ -46,25 +46,25 @@ int main(){
                     cuttingPoint[0] = position[0];
                     cuttingPoint[1] = positions[i][1];
                     if ((cuttingPoint[1] - position[1]) *
-                            (cuttingPoint[1] - positions[count][1]) <= 0){
+                        (cuttingPoint[1] - positions[count][1]) <= 0){
                         if(((cuttingPoint[0] - positions[i][0]) *
-                                (cuttingPoint[0] - positions[i - 1][0])) <= 0){
+                            (cuttingPoint[0] - positions[i - 1][0])) <= 0){
                             return abs(cuttingPoint[0]) +
                                    abs(cuttingPoint[1]);
                         }
                     }
                 }
-                /*
-                 * Previous was for when movement is vertical,
-                 * next is when movement is horizontal.
-                 */
+                    /*
+                     * Previous was for when movement is vertical,
+                     * next is when movement is horizontal.
+                     */
                 else{
                     cuttingPoint[0] = positions[i][0];
                     cuttingPoint[1] = position[1];
                     if ((cuttingPoint[0] - position[0]) *
-                            (cuttingPoint[0] - positions[count][0]) <= 0){
+                        (cuttingPoint[0] - positions[count][0]) <= 0){
                         if(((cuttingPoint[1] - positions[i][1]) *
-                                (cuttingPoint[1] - positions[i - 1][1])) <= 0){
+                            (cuttingPoint[1] - positions[i - 1][1])) <= 0){
                             return abs(cuttingPoint[0]) +
                                    abs(cuttingPoint[1]);
                         }
