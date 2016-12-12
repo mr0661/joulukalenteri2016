@@ -47,8 +47,8 @@ void pad(char* input){
     int extraLength = (appendLength < LENGTH_OF_END_PAD) ?
                       (LENGTH_OF_END_PAD - appendLength ) :
                       (SIZE_OF_PADDING + SIZE_OF_PADDING - appendLength );
-    realloc(input, sizeof(char)*(length));
-    *(input) = FIRST_PAD;
+    realloc(input, sizeof(char)*(length + extraLength));
+    *(input + 3) = FIRST_PAD;
     for(int i = 1; i < extraLength; i++){
         *(input + length + i) = FIRST_PAD;
     }
