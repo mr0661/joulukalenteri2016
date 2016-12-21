@@ -20,6 +20,7 @@ const char PATH[70] = "C:\\Users\\ossis\\ClionProjects\\joulukalenteri_2016\\20\
 const unsigned int MAX_RULES = 1200;
 const unsigned int MAX_ROW = 100;
 const int BASE = 10;
+const rt MAX_IP = 4294967295;
 
 void sort(rule* rules, unsigned int length);
 
@@ -38,16 +39,22 @@ rt main(){
         ++index;
     }
     sort(rules, index);
+    unsigned int count = 0;
+    rt currentSmallest = 0;
     rt smallestRule = 0;
-    unsigned int i = 0;
-    while(1){
-        if(smallestRule < rules[i].banBegin){
-            break;
+    for(unsigned int i = 0; i < index; ++i){
+        if(currentSmallest < rules[i].banBegin){
+            if(!smallestRule){ // Assume smallest rule isn't 0
+                smallestRule = currentSmallest;
+            }
+            count += rules[i].banBegin - currentSmallest;
+
         }
-        smallestRule = max(rules[i].banEnd + 1, smallestRule);
-        ++i;
+        currentSmallest = max(rules[i].banEnd + 1, currentSmallest);
     }
-    return smallestRule;
+    count += MAX_IP - (currentSmallest - 1); //if las IP:S aren't blocked, this checks for that
+    printf("Available IPs:%u\nSmallest available:%llu", count, smallestRule);
+    return 1;
 }
 
 
