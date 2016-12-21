@@ -22,8 +22,10 @@ const unsigned int MAX_ROW = 100;
 const int BASE = 10;
 const rt MAX_IP = 4294967295;
 
+//Sort "rules", with length of "length". uses "int correctOrder()" to determine order
 void sort(rule* rules, unsigned int length);
 
+// Used to determine correct order. Ascending order with banBegin being more relevant
 int correctOrder(const rule* r1, const rule* r2);
 
 rt main(){
@@ -52,7 +54,7 @@ rt main(){
         }
         currentSmallest = max(rules[i].banEnd + 1, currentSmallest);
     }
-    count += MAX_IP - (currentSmallest - 1); //if las IP:S aren't blocked, this checks for that
+    count += MAX_IP - (currentSmallest - 1); //if last IP:S aren't blocked, this checks for that
     printf("Available IPs:%u\nSmallest available:%llu", count, smallestRule);
     return 1;
 }
@@ -94,7 +96,6 @@ void sort(rule* rules, unsigned int length){
             rules[1] = tmp;
             return;
         }
-
     }
 }
 
