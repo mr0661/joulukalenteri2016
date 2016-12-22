@@ -24,19 +24,20 @@ const char PATH[70] = "C:\\Users\\ossis\\ClionProjects\\joulukalenteri_2016\\21\
 const int MAX_OPERATIONS = 100;
 const int INPUT_MAX = 100;
 const int PASSWORD_MAX = 20;
-const char PASSWORD[20] = "abcdefgh";
+const char *PASSWORD1 = "abcdefgh";
+const char *PASSWORD2 = "fbgdceah";
 
-const char SWAP_POSTION_COM1[15] = "swap position ";
-const char SWAP_POSTION_COM2[16] = " with position ";
-const char SWAP_LETTER_COM1[15]  = "swap letter ";
-const char SWAP_LETTER_COM2[15]  = " with letter ";
-const char ROTATE_LEFT_COM1[15]  = "rotate left ";
-const char ROTATE_RIGHT_COM1[15] = "rotate right ";
-const char ROTATE_BASED_COM1[36] = "rotate based on position of letter ";
-const char REVERSE_COM1[20]      = "reverse positions ";
-const char REVERSE_COM2[20]      = " through ";
-const char MOVE_COM1[15]         = "move position ";
-const char MOVE_COM2[15]         = " to position ";
+const char *SWAP_POSTION_COM1 = "swap position ";
+const char *SWAP_POSTION_COM2 = " with position ";
+const char *SWAP_LETTER_COM1  = "swap letter ";
+const char *SWAP_LETTER_COM2  = " with letter ";
+const char *ROTATE_LEFT_COM1  = "rotate left ";
+const char *ROTATE_RIGHT_COM1 = "rotate right ";
+const char *ROTATE_BASED_COM1 = "rotate based on position of letter ";
+const char *REVERSE_COM1      = "reverse positions ";
+const char *REVERSE_COM2      = " through ";
+const char *MOVE_COM1         = "move position ";
+const char *MOVE_COM2         = " to position ";
 
 void swapPosition(char * target, int pos1, int pos2);
 
@@ -46,6 +47,8 @@ void rotate(char * target, int steps, dir direction);
 
 void rotateByLetter(char* target, char letter);
 
+void unRotateByLetter(char* target, char letter);
+
 void reversePosition(char* target, int pos1, int pos2);
 
 void movePosition(char* target, int pos1, int pos2);
@@ -54,23 +57,31 @@ void extractOperation(char* input, operation * o);
 
 void doOperation(char* password, operation * o);
 
+void unDoOperation(char* password, operation * o);
+
 int main(){
-    char password[PASSWORD_MAX];
-    strcpy(password, PASSWORD);
+    char password1[PASSWORD_MAX];
+    strcpy(password1, PASSWORD1);
+    char password2[PASSWORD_MAX];
+    strcpy(password2, PASSWORD2);
     char input[INPUT_MAX];
     FILE * f = fopen(PATH, "r");
     operation o[MAX_OPERATIONS];
     int index = 0;
     while(fgets(input, INPUT_MAX, f)){
         extractOperation(input, o + index);
-        // doOperation(password, o + index); //Could be done also in here
+        doOperation(password1, o + index);
         ++index;
     }
-    int i = 0;
-    while( i < index){
-        doOperation(password, o + i++);
+    int i = index;
+    while( i >= 0 ){
+        unDoOperation(password2, o + i--);
     }
-    printf(password);
+    printf("Scrambling: ");
+    printf(password1);
+    printf("\nUnscrambling: ");
+    printf(password2);
+
     printf("\n");
     return 1;
 }
@@ -111,6 +122,21 @@ void rotateByLetter(char* target, char letter){
     int index;
     for(index = 0; target[index] != letter ; ++index);
     (index >= 4) ? rotate(target, index + 2, RIGHT) : rotate(target, index + 1, RIGHT);
+}
+
+void unRotateByLetter(char* target, char letter){
+    char* ptr = malloc(sizeof(char) * (strlen(target) + 1));
+    int index = 0;
+    while(1) {
+        strcpy(ptr, target);
+        rotate(ptr, index, LEFT);
+        rotateByLetter(ptr, letter);
+        if(strstr(ptr, target)){
+            rotate(target, index, LEFT);
+            return;
+        }
+        index++;
+    }
 }
 
 void reversePosition(char* target, int pos1, int pos2){
@@ -197,5 +223,26 @@ void doOperation(char* password, operation * o){
     }
     else if(o->c == MOVE){
         movePosition(password, o->num1, o->num2);
+    }
+}
+
+void unDoOperation(char* password, operation * o){
+    if(o->c == SWAP_POSTION){
+        swapPosition(password, o->num1, o->num2);
+    }
+    else if(o->c == SWAP_LETTER){
+        swapLetter(password, (char)o->num1, (char)o->num2);
+    }
+    else if(o->c == ROTATE){
+        rotate(password, o->num2, (o->num1 == RIGHT) ? LEFT : RIGHT );
+    }
+    else if(o->c == ROTATE_BASED){
+        unRotateByLetter(password, (char)o->num1);
+    }
+    else if(o->c == REVERSE){
+        reversePosition(password, o->num1, o->num2);
+    }
+    else if(o->c == MOVE){
+        movePosition(password, o->num2, o->num1);
     }
 }
