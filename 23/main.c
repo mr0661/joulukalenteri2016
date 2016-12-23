@@ -14,7 +14,7 @@
 
 enum Operator{CPY, INC, DEC, JNZ, TGL};
 
-const char REGISTER_START_VALUE = 0;
+const char REGISTER_START_VALUE = 0; // shouldn't be changed
 const char *COPY_STR = "cpy";
 const char *INCREMENT_STR = "inc";
 const char *DECREMENT_STR = "dec";
@@ -22,7 +22,10 @@ const char *JUMP_STR = "jnz";
 const char *TOGGLE_STR = "tgl";
 const int NULL_REG_ID = CHAR_MAX;
 const char ID_HASH = 'a';
-const int AFTER_COMMAND_LOCATION = 4;
+// This can be used to change between Part1(7) and Part2(12), other way is
+// to manipulate input file
+const int EGGS = 7;
+
 const int BASE = 10;
 const char *PATH = "C:\\Users\\ossis\\ClionProjects\\joulukalenteri_2016\\23\\input.txt";
 
@@ -53,10 +56,9 @@ int main() {
     com commands[COMMAND_MAX];
     int registers[REGISTER_MAX];
     memset(registers, REGISTER_START_VALUE, REGISTER_MAX * sizeof(int));
-    registers['c' - ID_HASH] = 1; // For part 2
+    registers[0] = EGGS; // Register start value
     char row[ROW_MAX];
     unsigned int programLength = 0;
-    unsigned int programPointer = 0;
     while (1) {
         fgets(row, ROW_MAX, f);
         makeCommand(commands + programLength, row);
@@ -65,9 +67,9 @@ int main() {
         }
         ++programLength;
     }
-
-    while(programPointer <= programLength){
+    for(unsigned int programPointer = 0; programPointer <= programLength; programPointer++){
         if(commands[programPointer].o == CPY){
+            if(commands[programPointer].regID2 == NULL_REG_ID) continue;
             if(commands[programPointer].regID1 != NULL_REG_ID){
                 cpy(*(registers + commands[programPointer].regID1), registers + commands[programPointer].regID2);
             }
@@ -82,15 +84,20 @@ int main() {
             continue;
         }
         else if(commands[programPointer].o == INC){
+            if(commands[programPointer].regID1 == NULL_REG_ID) continue;
             inc(registers + commands[programPointer].regID1);
         }
         else if(commands[programPointer].o == DEC){
+            if(commands[programPointer].regID1 == NULL_REG_ID) continue;
             dec(registers + commands[programPointer].regID1);
         }
-        programPointer++;
+        else if(commands[programPointer].o == TGL) {
+            tgl(commands + programPointer + ((commands[programPointer].regID1 == NULL_REG_ID) ?
+                                             commands[programPointer].value1 : registers[commands[programPointer].regID1]));
+        }
     }
-
-    return 0;
+    printf("%i", registers[0]);
+    return registers[0];
 }
 
 void makeCommand(com *new, char input[]){
@@ -122,10 +129,18 @@ void makeCommand(com *new, char input[]){
         }
         return;
     }
-    if(!memcmp(input, INCREMENT_STR, strlen(INCREMENT_STR))) {
+    if(!memcmp(input, TOGGLE_STR, strlen(TOGGLE_STR))) {
+        new->o = TGL;
+        if(!isalpha(input[strlen(TOGGLE_STR) + 1])){
+            new->regID1 = NULL_REG_ID;
+            new->value1 = strtol(input + strlen(TOGGLE_STR) + 1, &ptr1, BASE);
+            return;
+        }
+    }
+    else if(!memcmp(input, INCREMENT_STR, strlen(INCREMENT_STR))) {
         new->o = INC;
     }
-    if(!memcmp(input, DECREMENT_STR, strlen(DECREMENT_STR))) {
+    else if(!memcmp(input, DECREMENT_STR, strlen(DECREMENT_STR))) {
         new->o = DEC;
     }
     new->regID1 = input[strlen(INCREMENT_STR) + 1] - ID_HASH;
@@ -135,20 +150,21 @@ void makeCommand(com *new, char input[]){
 
 void tgl(com *command){
     if(command->o == TGL){
-
+        command->o = INC;
     }
     else if(command->o == INC){
-
+        command->o = DEC;
     }
     else if(command->o == DEC){
-
+        command->o = INC;
     }
     else if(command->o == JNZ){
-
+        command->o = CPY;
     }
     else if(command->o == CPY){
-
+        command->o = JNZ;
     }
+    return;
 }
 
 void cpy(int value, int *reg){
@@ -164,9 +180,6 @@ void dec(int *reg){
 
 void jnz(unsigned int *programPointer, int condition, int jump){
     if(condition) {
-        *programPointer += jump;
-    }
-    else{
-        ++(*programPointer);
+        *programPointer += jump - 1;
     }
 }
