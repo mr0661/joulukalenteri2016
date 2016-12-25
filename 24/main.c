@@ -19,6 +19,7 @@ const char WALL_CHR = '#';
 const char FLOOR_CHR = '.';
 const char START_CHR = '0';
 const char *TARGET_CHR = "01234567";
+const int RETURN_ID = 0;
 
 
 const int X_DIR[DIRECTIONS] = {1, -1, 0, 0};
@@ -37,8 +38,9 @@ typedef struct Target target;
 
 void findDistances(target *t, const char map[COLUMN_LENGTH][ROW_LENGTH]);
 
-unsigned int iterTrough(const target * targets, const target current, const char * possibileTargetIDs);
+unsigned int iterTrough(const target * targets, const target current, const char * possibileTargetIDs, int andBack);
 unsigned int countShortestRoute(const target *targets, const target current, int id1, int id2);
+unsigned int countShortestRouteAndBack(const target *targets, const target current, int id1, int id2);
 
 int main(){
     FILE* f = fopen(PATH, "r");
@@ -63,15 +65,22 @@ int main(){
         findDistances(targets + index, map);
     }
     //index = iterTrough(targets, targets[4], TARGET_CHR + 5);
-    index = iterTrough(targets, targets[0], TARGET_CHR + 1);
-    printf("%i", index);
+    int length1 = iterTrough(targets, targets[0], TARGET_CHR + 1, 0);
+    int length2 = iterTrough(targets, targets[0], TARGET_CHR + 1, 1);
+    printf("%i\n%i", length1, length2);
     return index;
 }
 
-unsigned int iterTrough(const target * targets, const target current, const char * possibileTargetIDs){
+unsigned int iterTrough(const target * targets, const target current, const char * possibileTargetIDs, int andBack){
     if(strlen(possibileTargetIDs) == 2){
-        return countShortestRoute(targets, current,
-                                  possibileTargetIDs[0] - '0', possibileTargetIDs[1] - '0');
+        if(andBack){
+            return countShortestRouteAndBack(targets, current,
+                                      possibileTargetIDs[0] - '0', possibileTargetIDs[1] - '0');
+        }
+        else {
+            return countShortestRoute(targets, current,
+                                      possibileTargetIDs[0] - '0', possibileTargetIDs[1] - '0');
+        }
     }
     char newTarget[TARGET_COUNT + 1];
     unsigned int shortestLength = UINT_MAX; // Lets choose some large uint value
@@ -79,13 +88,19 @@ unsigned int iterTrough(const target * targets, const target current, const char
     for(int i = 0; i < strlen(possibileTargetIDs);++i){
         strcpy(newTarget, possibileTargetIDs);
         strcpy(newTarget + i, possibileTargetIDs + i + 1);
-        length = iterTrough(targets, targets[possibileTargetIDs[i] - '0'], newTarget);
+        length = iterTrough(targets, targets[possibileTargetIDs[i] - '0'], newTarget, andBack);
         length += + current.distance[possibileTargetIDs[i] - '0'];
         if(shortestLength > length){
             shortestLength = length;
         }
     }
     return shortestLength;
+}
+
+unsigned int countShortestRouteAndBack(const target *targets, const target current, int id1, int id2){
+    int length1 = current.distance[id1] + targets[id1].distance[id2] + targets[id2].distance[RETURN_ID];
+    int length2 = current.distance[id2] + targets[id2].distance[id1] + targets[id1].distance[RETURN_ID];
+    return (unsigned int)((length1 < length2) ? length1: length2);
 }
 
 unsigned int countShortestRoute(const target *targets, const target current, int id1, int id2){
