@@ -25,6 +25,6 @@ dec b
 dec c
 jnz 1 -4
 jnz 0 0
-jnz 0 0
+out b
 jnz a -19
 jnz 1 -21
